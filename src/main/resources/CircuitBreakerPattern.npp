@@ -1,0 +1,50 @@
+Circuit Breaker Pattern
+	
+	Dependencies
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot2</artifactId>
+		</dependency>
+	
+	Controller
+		@CircuitBreaker(name = "ratingHotelBreaker", fallbackMethod = "ratingFallback")
+		
+		// creating fallback method for circuit breaker
+		public ResponseEntity<User> ratingFallback(String userId, Exception ex){
+			log.info("Fallback is executed because service is down. ", ex.getMessage());
+
+			User user = User.builder()
+					.email("dummy@email.com")
+					.name("John Doe")
+					.about("This is a dummy user.")
+					.build();
+			return new ResponseEntity<>(user, HttpStatus.OK);
+		}
+		
+	application.properties
+		# ACTUATOR PROPERTIES
+		management.health.circuitbreakers.enabled: true
+		management.endpoints.web.exposre.include: health
+		management.endpoint.health.show-details: always
+
+		# CIRCUIT BREAKER PROPERTIES
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.registerHealthIndicator=true
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.eventConsumerBufferSize=10
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.failureRateThreshold=50
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.minimumNumberOfCalls=5
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.automaticTransitionFromOpenToHalfOpenEnabled=true
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.waitDurationInOpenState=6s
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.permittedNumberOfCallsInHalfOpenState=3
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.slidingWindowSize=10
+		resilience4j.circuitbreaker.instances.ratingHotelBreaker.slidingWindowType=COUNT_BASED
+		
+	
+	Actuator URL: http://localhost:9091/actuator/health
