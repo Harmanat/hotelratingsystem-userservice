@@ -3,6 +3,7 @@ package com.mannat.userservice.controller;
 import java.util.List;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,10 +31,15 @@ public class UserController {
 		User createdUser = userService.saveUser(user);
 		return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
 	}
-	
+
+	int retryCount = 1;
+
 	@GetMapping("/{userId}")
-	@CircuitBreaker(name = "ratingHotelBreaker", fallbackMethod = "ratingFallback")
+	//@CircuitBreaker(name = "ratingHotelBreaker", fallbackMethod = "ratingFallback")
+	@Retry(name = "ratingHotelRetry", fallbackMethod = "ratingFallback")
 	public ResponseEntity<User> getSingleUser(@PathVariable String userId){
+		log.info("Retry count: "+ retryCount);
+		retryCount++;
 		User userById = userService.getUser(userId);
 		return ResponseEntity.ok(userById);
 	}
