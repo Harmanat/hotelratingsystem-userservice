@@ -3,6 +3,7 @@ package com.mannat.userservice.controller;
 import java.util.List;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,8 @@ public class UserController {
 
 	@GetMapping("/{userId}")
 	//@CircuitBreaker(name = "ratingHotelBreaker", fallbackMethod = "ratingFallback")
-	@Retry(name = "ratingHotelRetry", fallbackMethod = "ratingFallback")
+	//@Retry(name = "ratingHotelRetry", fallbackMethod = "ratingFallback")
+	@RateLimiter(name = "userRateLimiter", fallbackMethod = "ratingFallback")
 	public ResponseEntity<User> getSingleUser(@PathVariable String userId){
 		log.info("Retry count: "+ retryCount);
 		retryCount++;
