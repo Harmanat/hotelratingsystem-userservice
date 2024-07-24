@@ -1,0 +1,33 @@
+RATE LIMITER
+	Security
+	Performance
+	
+	RPS - Request per second
+	RPM - Request per minute
+	RPH - Request per hour
+
+CODE
+	Dependencies
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-spring-boot2</artifactId>
+		</dependency>
+
+	Controller
+		@RateLimiter(name = "userRateLimiter", fallbackMethod = "ratingFallback")
+
+	application.properties
+		ratelimiter.instances.userRateLimiter.limit-refresh-period=4s
+		ratelimiter.instances.userRateLimiter.limit-for-period=2
+		ratelimiter.instances.userRateLimiter.timeout-duration=0s
+
+TESTING
+	Download the software JMeter
